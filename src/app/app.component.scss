@@ -1,0 +1,42 @@
+button {
+//  padding: 20px 5px 20px 5px;
+  padding: 0;
+  text-align: center;
+  height: 80px;
+  width: 80px;
+  margin: 10px;
+  border-radius: 40px;
+  -webkit-appearance: none;
+  background-color: cornsilk;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+#buy-btn {
+  color: blue;
+}
+#sell-btn {
+  color: red;
+}
+
+
+
+svg {
+  border: 1px solid black;
+  margin: 1px;
+}
+
+.zzz {
+  border: 0px solid red;
+
+}
+
+.zzz2 {
+  border: 0px solid blue;
+
+}
+
+#btn-bar {
+  position: absolute;
+  opacity: 0.5;
+}

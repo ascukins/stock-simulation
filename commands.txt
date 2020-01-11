@@ -1,0 +1,4 @@
+ng new ticker1
+ng g service constants
+ng g service ticker-store
+npm install rxjs@latest --save

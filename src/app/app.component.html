@@ -1,21 +1,146 @@
-<!--The content below is only a placeholder and can be replaced.-->
-<div style="text-align:center">
-  <h1>
-    Welcome to {{ title }}!
-  </h1>
-  <img width="300" alt="Angular Logo" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTAgMjUwIj4KICAgIDxwYXRoIGZpbGw9IiNERDAwMzEiIGQ9Ik0xMjUgMzBMMzEuOSA2My4ybDE0LjIgMTIzLjFMMTI1IDIzMGw3OC45LTQzLjcgMTQuMi0xMjMuMXoiIC8+CiAgICA8cGF0aCBmaWxsPSIjQzMwMDJGIiBkPSJNMTI1IDMwdjIyLjItLjFWMjMwbDc4LjktNDMuNyAxNC4yLTEyMy4xTDEyNSAzMHoiIC8+CiAgICA8cGF0aCAgZmlsbD0iI0ZGRkZGRiIgZD0iTTEyNSA1Mi4xTDY2LjggMTgyLjZoMjEuN2wxMS43LTI5LjJoNDkuNGwxMS43IDI5LjJIMTgzTDEyNSA1Mi4xem0xNyA4My4zaC0zNGwxNy00MC45IDE3IDQwLjl6IiAvPgogIDwvc3ZnPg==">
-</div>
-<h2>Here are some links to help you start: </h2>
-<ul>
-  <li>
-    <h2><a target="_blank" rel="noopener" href="https://angular.io/tutorial">Tour of Heroes</a></h2>
-  </li>
-  <li>
-    <h2><a target="_blank" rel="noopener" href="https://angular.io/cli">CLI Documentation</a></h2>
-  </li>
-  <li>
-    <h2><a target="_blank" rel="noopener" href="https://blog.angular.io/">Angular blog</a></h2>
-  </li>
-</ul>
+<ng-container *ngIf="tickerStoreService.ticker$ | async as ticks">
+  RNG: {{ tickerStoreService.rngChoice }}, Interval:
+  {{ tickerStoreService.timeInterval.toPrecision(2) }}, Open PnL:
+  {{ openPL.toPrecision(2) }}
+  <br />
+  <br />
+  <div class="zzz">
+    <div class="zzz2">
+      <div id="btn-bar">
+        <button id="restart-btn" (click)="onRestart()">Restart</button>
+        <button id="pause-btn" (click)="onTogglePause()">
+          {{ tickerStoreService.paused ? "Resume" : "Pause" }}
+        </button>
+        <button
+          id="scroll-back-btn"
+          (click)="tickerStoreService.shiftVisibleWindow(200)"
+        >
+          &lt;&lt;
+        </button>
+        <button
+          id="scroll-forward-btn"
+          (click)="tickerStoreService.shiftVisibleWindow(-200)"
+        >
+          &gt;&gt;
+        </button>
+        <button id="slowdown-btn" (click)="tickerStoreService.slowDown()">
+          -
+        </button>
+        <button id="speedup-btn" (click)="tickerStoreService.speedUp()">
+          +
+        </button>
+        <button id="buy-btn" (click)="onBuyClick()">
+          {{ openTrade ? "Close" : "Buy" }}
+        </button>
+        <button id="sell-btn" (click)="onSellClick()">
+          {{ openTrade ? "Close" : "Sell" }}
+        </button>
+      </div>
+
+      <svg
+        [attr.width]="svgWidth"
+        [attr.height]="svgHeight"
+        (mousemove)="onMouseMove($event)"
+        (mousedown)="onMouseDown($event)"
+        (mouseup)="onMouseUp($event)"
+      >
+        <line
+          *ngFor="let x of verticalLines"
+          [attr.x1]="x"
+          [attr.y1]="0"
+          [attr.x2]="x"
+          [attr.y2]="svgHeight"
+          stroke="GAINSBORO"
+          stroke-width="1"
+          stroke-dasharray="4"
+        />
+
+        <ng-container *ngFor="let tick of ticks; index as i">
+          <line
+            *ngIf="i > 0 && i < svgWidth"
+            [attr.x1]="i"
+            [attr.y1]="
+              ((ticks[i - 1] - tickerStoreService.minTick) /
+                (tickerStoreService.maxTick - tickerStoreService.minTick)) *
+              svgHeight
+            "
+            [attr.x2]="i"
+            [attr.y2]="
+              ((tick - tickerStoreService.minTick) /
+                (tickerStoreService.maxTick - tickerStoreService.minTick)) *
+              svgHeight
+            "
+            stroke="blue"
+            stroke-width="1"
+          />
+        </ng-container>
+
+        <line
+          [attr.x1]="svgMouseX"
+          [attr.y1]="0"
+          [attr.x2]="svgMouseX"
+          [attr.y2]="svgHeight"
+          stroke="RED"
+          stroke-width="1"
+          stroke-dasharray="1 4"
+        />
+        <line
+          [attr.x1]="0"
+          [attr.y1]="svgMouseY"
+          [attr.x2]="svgWidth"
+          [attr.y2]="svgMouseY"
+          stroke="RED"
+          stroke-width="1"
+          stroke-dasharray="1 4"
+        />
+
+        <line
+          *ngIf="openTrade === -1"
+          [attr.x1]="0"
+          [attr.y1]="
+            ((openPrice - tickerStoreService.minTick) /
+              (tickerStoreService.maxTick - tickerStoreService.minTick)) *
+            svgHeight
+          "
+          [attr.x2]="svgWidth"
+          [attr.y2]="
+            ((openPrice - tickerStoreService.minTick) /
+              (tickerStoreService.maxTick - tickerStoreService.minTick)) *
+            svgHeight
+          "
+          stroke="ORANGERED"
+          stroke-width="1"
+          stroke-dasharray="6 3 2 3"
+        />
+
+        <line
+          *ngIf="openTrade === 1"
+          [attr.x1]="0"
+          [attr.y1]="
+            ((openPrice - tickerStoreService.minTick) /
+              (tickerStoreService.maxTick - tickerStoreService.minTick)) *
+            svgHeight
+          "
+          [attr.x2]="svgWidth"
+          [attr.y2]="
+            ((openPrice - tickerStoreService.minTick) /
+              (tickerStoreService.maxTick - tickerStoreService.minTick)) *
+            svgHeight
+          "
+          stroke="GREEN"
+          stroke-width="1"
+          stroke-dasharray="6 3 2 3"
+        />
+      </svg>
+    </div>
+  </div>
+  <div id="tradeTable">
+    <div *ngFor="let trade of trades">
+      <span> {{ trade.direction }} </span>
+      <span> {{ trade.profit }} </span>
+    </div>
+  </div>
+  <div *ngIf="profitTotal">Total profit {{ profitTotal }}</div>
+</ng-container>
 
 <router-outlet></router-outlet>
