@@ -58,7 +58,7 @@ export class AppComponent implements OnInit {
   ngOnInit() {
     this.tickerStoreService.ticker$.subscribe(
       () => {
-        this.lastTick = this.tickerStoreService.ticks[this.tickerStoreService.ticks.length - 1];
+        this.lastTick = this.tickerStoreService.ticks[this.tickerStoreService.ticks.length - 1].c;
         if (this.openTrade === -1) {
           this.openPL = this.lastTick - this.openPrice;
         } else if (this.openTrade === 1) {
@@ -142,6 +142,12 @@ export class AppComponent implements OnInit {
     } else {
       this.close();
     }
+  }
+
+  tickY(y: number) {
+    return (y - this.tickerStoreService.minTick) /
+      (this.tickerStoreService.maxTick - this.tickerStoreService.minTick) *
+      this.svgHeight;
   }
 
 }

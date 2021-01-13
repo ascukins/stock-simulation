@@ -4,29 +4,47 @@ import { interval } from 'rxjs';
 import { map, filter } from 'rxjs/operators';
 import * as seedrandom from 'seedrandom';
 
+export interface Tick {
+  o?: number;
+  h?: number;
+  l?: number;
+  c: number;
+  ma1?: number;
+  ma2?: number;
+  ma3?: number;
+  ma4?: number;
+  ma5?: number;
+  ma6?: number;
+  ma7?: number;
+  ma8?: number;
+}
+
+const calcMAs = (ticks: Tick[]) => { };
+
 @Injectable({
   providedIn: 'root'
 })
 export class TickerStoreService {
 
-  ticks: number[] = [0];
-  visibleTicks: number[] = [0];
+  mas = [1, 32, 64, 128, 256, 512];
+
+  ticks: Tick[] = [{ c: 0 }];
+  visibleTicks: Tick[] = [{ c: 0 }];
   paused = false;
   maxTick = 10;
   minTick = -10;
-  timeInterval = 13;
+  timeInterval = 5;
   private counter = 0;
   visibleShift = 0;
   visibleLength = 1200;
   customRNG: () => number;
   rngChoice = 0;
-  ticker$ = new BehaviorSubject([0]);
+  ticker$ = new BehaviorSubject<Tick[]>([{ c: 0 }]);
   timeTicker$ = interval(1).pipe(
     filter(() => !this.paused),
     filter(() => (++this.counter % Math.round(this.timeInterval) === 0)),
-    map(() => this.generateRandomValue()),
-    map(n => {
-      this.ticks[this.ticks.length] = this.ticks[this.ticks.length - 1] + n;
+    map(() => {
+      this.addRandomTick();
       if (this.visibleShift > 0) {
         this.visibleShift++;
       }
@@ -40,25 +58,56 @@ export class TickerStoreService {
     this.initTicksArray();
     this.subscription = this.timeTicker$.subscribe(a => this.ticker$.next(a));
   }
+
+  calcTickMA(index: number, maIndex: number) {
+    const period: number = this.mas[maIndex];
+    const maPropName = 'ma' + maIndex;
+    const prevMa = this.ticks[index - 1][maPropName];
+    let currentMa: number;
+    if (prevMa) {
+      currentMa = prevMa + (this.ticks[index].c - this.ticks[index - period].c) / period;
+    } else {
+      currentMa = 0;
+      for (let i = 0; i < period; i++) {
+        currentMa += this.ticks[index - i].c / period;
+      }
+    }
+    this.ticks[index][maPropName] = currentMa;
+  }
+
+  addRandomTick() {
+    const length = this.ticks.length;
+    this.ticks.push({ c: this.ticks[length - 1].c + this.generateRandomValue() });
+    if (length > 600) {
+      this.calcTickMA(length, 1);
+      this.calcTickMA(length, 2);
+      this.calcTickMA(length, 3);
+      this.calcTickMA(length, 4);
+      this.calcTickMA(length, 5);
+    }
+  }
+
   initTicksArray() {
-    this.ticks = [0];
+    this.ticks = [{ c: 0 }];
     for (let i = 1; i < this.visibleLength * 2; i++) {
-      this.ticks[i] = this.ticks[i - 1] + this.generateRandomValue();
+      this.addRandomTick();
     }
   }
 
   generateRandomValue() {
     let sum = 0;
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < 10; i++) {
       sum += (this.customRNG() - 0.5);
     }
     return sum;
   }
 
   recalculateVisibleTicks() {
-    this.visibleTicks = this.ticks.slice(Math.max(0, this.ticks.length - this.visibleShift - this.visibleLength));
-    this.maxTick = Math.max(...this.visibleTicks);
-    this.minTick = Math.min(...this.visibleTicks);
+    const start = Math.max(0, this.ticks.length - this.visibleShift - this.visibleLength);
+    this.visibleTicks = this.ticks.slice(start, start + 1200);
+    const visibleCloses = this.visibleTicks.map(t => t.c);
+    this.maxTick = Math.max(...visibleCloses);
+    this.minTick = Math.min(...visibleCloses);
     return this.visibleTicks;
   }
 

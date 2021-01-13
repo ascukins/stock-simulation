@@ -56,23 +56,66 @@
         />
 
         <ng-container *ngFor="let tick of ticks; index as i">
-          <line
-            *ngIf="i > 0 && i < svgWidth"
-            [attr.x1]="i"
-            [attr.y1]="
-              ((ticks[i - 1] - tickerStoreService.minTick) /
-                (tickerStoreService.maxTick - tickerStoreService.minTick)) *
-              svgHeight
-            "
-            [attr.x2]="i"
-            [attr.y2]="
-              ((tick - tickerStoreService.minTick) /
-                (tickerStoreService.maxTick - tickerStoreService.minTick)) *
-              svgHeight
-            "
-            stroke="blue"
-            stroke-width="1"
-          />
+          <ng-container *ngIf="i > 0 && i < svgWidth">
+            <line
+              [attr.x1]="i - 1"
+              [attr.y1]="tickY(ticks[i - 1].ma1)"
+              [attr.x2]="i"
+              [attr.y2]="tickY(ticks[i].ma1)"
+              stroke="orange"
+              stroke-width="1"
+            />
+            <line
+              [attr.x1]="i - 1"
+              [attr.y1]="tickY(ticks[i - 1].ma2)"
+              [attr.x2]="i"
+              [attr.y2]="tickY(ticks[i].ma2)"
+              stroke="orange"
+              stroke-width="1"
+            />
+            <line
+              [attr.x1]="i - 1"
+              [attr.y1]="tickY(ticks[i - 1].ma3)"
+              [attr.x2]="i"
+              [attr.y2]="tickY(ticks[i].ma3)"
+              stroke="orange"
+              stroke-width="1"
+            />
+            <line
+              [attr.x1]="i - 1"
+              [attr.y1]="tickY(ticks[i - 1].ma4)"
+              [attr.x2]="i"
+              [attr.y2]="tickY(ticks[i].ma4)"
+              stroke="orange"
+              stroke-width="1"
+            />
+            <line
+              [attr.x1]="i - 1"
+              [attr.y1]="tickY(ticks[i - 1].ma5)"
+              [attr.x2]="i"
+              [attr.y2]="tickY(ticks[i].ma5)"
+              stroke="orange"
+              stroke-width="1"
+            />
+            <line
+              *ngIf="ticks[i].ma6"
+              [attr.x1]="i - 1"
+              [attr.y1]="tickY(ticks[i - 1].ma6)"
+              [attr.x2]="i"
+              [attr.y2]="tickY(ticks[i].ma6)"
+              stroke="orange"
+              stroke-width="1"
+            />
+
+            <line
+              [attr.x1]="i"
+              [attr.y1]="tickY(ticks[i - 1].c)"
+              [attr.x2]="i"
+              [attr.y2]="tickY(ticks[i].c)"
+              stroke="blue"
+              stroke-width="1"
+            />
+          </ng-container>
         </ng-container>
 
         <line
