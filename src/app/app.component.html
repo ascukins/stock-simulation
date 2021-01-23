@@ -3,187 +3,59 @@
   {{ tickerStoreService.timeInterval.toPrecision(2) }}, Open PnL:
   {{ openPL.toPrecision(2) }}
   <br />
-  <br />
-  <div class="zzz">
-    <div class="zzz2">
-      <div id="btn-bar">
-        <button id="restart-btn" (click)="onRestart()">Restart</button>
-        <button id="pause-btn" (click)="onTogglePause()">
-          {{ tickerStoreService.paused ? "Resume" : "Pause" }}
-        </button>
-        <button
-          id="scroll-back-btn"
-          (click)="tickerStoreService.shiftVisibleWindow(200)"
-        >
-          &lt;&lt;
-        </button>
-        <button
-          id="scroll-forward-btn"
-          (click)="tickerStoreService.shiftVisibleWindow(-200)"
-        >
-          &gt;&gt;
-        </button>
-        <button id="slowdown-btn" (click)="tickerStoreService.slowDown()">
-          -
-        </button>
-        <button id="speedup-btn" (click)="tickerStoreService.speedUp()">
-          +
-        </button>
-        <button id="buy-btn" (click)="onBuyClick()">
-          {{ openTrade ? "Close" : "Buy" }}
-        </button>
-        <button id="sell-btn" (click)="onSellClick()">
-          {{ openTrade ? "Close" : "Sell" }}
-        </button>
-      </div>
-
-      <svg
-        [attr.width]="svgWidth"
-        [attr.height]="svgHeight"
-        (mousemove)="onMouseMove($event)"
-        (mousedown)="onMouseDown($event)"
-        (mouseup)="onMouseUp($event)"
+</ng-container>
+<div class="zzz">
+  <div class="zzz2" [style.width.px]="svgWidth">
+    <div id="btn-bar">
+      <button id="restart-btn" (click)="onRestart()">Restart</button>
+      <button id="pause-btn" (click)="onTogglePause()">
+        {{ tickerStoreService.paused ? "Resume" : "Pause" }}
+      </button>
+      <button
+        id="scroll-back-btn"
+        (click)="tickerStoreService.shiftVisibleWindow(200)"
       >
-        <line
-          *ngFor="let x of verticalLines"
-          [attr.x1]="x"
-          [attr.y1]="0"
-          [attr.x2]="x"
-          [attr.y2]="svgHeight"
-          stroke="GAINSBORO"
-          stroke-width="1"
-          stroke-dasharray="4"
-        />
-
-        <ng-container *ngFor="let tick of ticks; index as i">
-          <ng-container *ngIf="i > 0 && i < svgWidth">
-            <line
-              [attr.x1]="i - 1"
-              [attr.y1]="tickY(ticks[i - 1].ma1)"
-              [attr.x2]="i"
-              [attr.y2]="tickY(ticks[i].ma1)"
-              stroke="orange"
-              stroke-width="1"
-            />
-            <line
-              [attr.x1]="i - 1"
-              [attr.y1]="tickY(ticks[i - 1].ma2)"
-              [attr.x2]="i"
-              [attr.y2]="tickY(ticks[i].ma2)"
-              stroke="orange"
-              stroke-width="1"
-            />
-            <line
-              [attr.x1]="i - 1"
-              [attr.y1]="tickY(ticks[i - 1].ma3)"
-              [attr.x2]="i"
-              [attr.y2]="tickY(ticks[i].ma3)"
-              stroke="orange"
-              stroke-width="1"
-            />
-            <line
-              [attr.x1]="i - 1"
-              [attr.y1]="tickY(ticks[i - 1].ma4)"
-              [attr.x2]="i"
-              [attr.y2]="tickY(ticks[i].ma4)"
-              stroke="orange"
-              stroke-width="1"
-            />
-            <line
-              [attr.x1]="i - 1"
-              [attr.y1]="tickY(ticks[i - 1].ma5)"
-              [attr.x2]="i"
-              [attr.y2]="tickY(ticks[i].ma5)"
-              stroke="orange"
-              stroke-width="1"
-            />
-            <line
-              *ngIf="ticks[i].ma6"
-              [attr.x1]="i - 1"
-              [attr.y1]="tickY(ticks[i - 1].ma6)"
-              [attr.x2]="i"
-              [attr.y2]="tickY(ticks[i].ma6)"
-              stroke="orange"
-              stroke-width="1"
-            />
-
-            <line
-              [attr.x1]="i"
-              [attr.y1]="tickY(ticks[i - 1].c)"
-              [attr.x2]="i"
-              [attr.y2]="tickY(ticks[i].c)"
-              stroke="blue"
-              stroke-width="1"
-            />
-          </ng-container>
-        </ng-container>
-
-        <line
-          [attr.x1]="svgMouseX"
-          [attr.y1]="0"
-          [attr.x2]="svgMouseX"
-          [attr.y2]="svgHeight"
-          stroke="RED"
-          stroke-width="1"
-          stroke-dasharray="1 4"
-        />
-        <line
-          [attr.x1]="0"
-          [attr.y1]="svgMouseY"
-          [attr.x2]="svgWidth"
-          [attr.y2]="svgMouseY"
-          stroke="RED"
-          stroke-width="1"
-          stroke-dasharray="1 4"
-        />
-
-        <line
-          *ngIf="openTrade === -1"
-          [attr.x1]="0"
-          [attr.y1]="
-            ((openPrice - tickerStoreService.minTick) /
-              (tickerStoreService.maxTick - tickerStoreService.minTick)) *
-            svgHeight
-          "
-          [attr.x2]="svgWidth"
-          [attr.y2]="
-            ((openPrice - tickerStoreService.minTick) /
-              (tickerStoreService.maxTick - tickerStoreService.minTick)) *
-            svgHeight
-          "
-          stroke="ORANGERED"
-          stroke-width="1"
-          stroke-dasharray="6 3 2 3"
-        />
-
-        <line
-          *ngIf="openTrade === 1"
-          [attr.x1]="0"
-          [attr.y1]="
-            ((openPrice - tickerStoreService.minTick) /
-              (tickerStoreService.maxTick - tickerStoreService.minTick)) *
-            svgHeight
-          "
-          [attr.x2]="svgWidth"
-          [attr.y2]="
-            ((openPrice - tickerStoreService.minTick) /
-              (tickerStoreService.maxTick - tickerStoreService.minTick)) *
-            svgHeight
-          "
-          stroke="GREEN"
-          stroke-width="1"
-          stroke-dasharray="6 3 2 3"
-        />
-      </svg>
+        &lt;&lt;
+      </button>
+      <button
+        id="scroll-forward-btn"
+        (click)="tickerStoreService.shiftVisibleWindow(-200)"
+      >
+        &gt;&gt;
+      </button>
+      <br />
+      <button id="slowdown-btn" (click)="tickerStoreService.slowDown()">
+        -
+      </button>
+      <button id="speedup-btn" (click)="tickerStoreService.speedUp()">+</button>
+      <button id="buy-btn" (click)="onBuyClick()">
+        {{ openTrade ? "Close" : "Buy" }}
+      </button>
+      <button id="sell-btn" (click)="onSellClick()">
+        {{ openTrade ? "Close" : "Sell" }}
+      </button>
     </div>
+    <canvas
+      #canvas
+      [attr.width]="svgWidth"
+      [attr.height]="svgHeight"
+      (mousemove)="onMouseMove($event)"
+      (mousedown)="onMouseDown($event)"
+      (mouseup)="onMouseUp($event)"
+    ></canvas>
   </div>
-  <div id="tradeTable">
-    <div *ngFor="let trade of trades">
-      <span> {{ trade.direction }} </span>
-      <span> {{ trade.profit }} </span>
-    </div>
+</div>
+<div id="tradeTable">
+  <div *ngFor="let trade of trades">
+    <span> {{ trade.direction }} </span>
+    <span> {{ trade.profit }} </span>
   </div>
-  <div *ngIf="profitTotal">Total profit {{ profitTotal }}</div>
+</div>
+<div *ngIf="profitTotal">Total profit {{ profitTotal }}</div>
+
+<br />
+<ng-container *ngIf="tickerStoreService.ticker$ | async as ticks">
+  <div class="zzz"></div>
 </ng-container>
 
 <router-outlet></router-outlet>

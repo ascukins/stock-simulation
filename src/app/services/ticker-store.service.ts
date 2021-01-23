@@ -9,6 +9,7 @@ export interface Tick {
   h?: number;
   l?: number;
   c: number;
+  ma0?: number;
   ma1?: number;
   ma2?: number;
   ma3?: number;
@@ -17,6 +18,7 @@ export interface Tick {
   ma6?: number;
   ma7?: number;
   ma8?: number;
+  ma9?: number;
 }
 
 const calcMAs = (ticks: Tick[]) => { };
@@ -26,17 +28,20 @@ const calcMAs = (ticks: Tick[]) => { };
 })
 export class TickerStoreService {
 
-  mas = [1, 32, 64, 128, 256, 512];
+  //  mas = [21, 34, 55, 89, 144, 233, 377, 610, 987]; // 0--8
+  mas = [16, 32, 64, 128, 256, 512, 1024, 2048, 4096]; // 0--8
 
   ticks: Tick[] = [{ c: 0 }];
   visibleTicks: Tick[] = [{ c: 0 }];
   paused = false;
   maxTick = 10;
   minTick = -10;
-  timeInterval = 5;
+  timeInterval = 12;
   private counter = 0;
   visibleShift = 0;
-  visibleLength = 1200;
+  svgHeight = 500;
+  svgWidth = 800;
+  visibleLength = this.svgWidth - 100;
   customRNG: () => number;
   rngChoice = 0;
   ticker$ = new BehaviorSubject<Tick[]>([{ c: 0 }]);
@@ -61,6 +66,9 @@ export class TickerStoreService {
 
   calcTickMA(index: number, maIndex: number) {
     const period: number = this.mas[maIndex];
+    if (!period || period > index) {
+      return;
+    }
     const maPropName = 'ma' + maIndex;
     const prevMa = this.ticks[index - 1][maPropName];
     let currentMa: number;
@@ -78,12 +86,8 @@ export class TickerStoreService {
   addRandomTick() {
     const length = this.ticks.length;
     this.ticks.push({ c: this.ticks[length - 1].c + this.generateRandomValue() });
-    if (length > 600) {
-      this.calcTickMA(length, 1);
-      this.calcTickMA(length, 2);
-      this.calcTickMA(length, 3);
-      this.calcTickMA(length, 4);
-      this.calcTickMA(length, 5);
+    for (let i = 0; i < 10; i++) {
+      this.calcTickMA(length, i);
     }
   }
 
@@ -104,7 +108,7 @@ export class TickerStoreService {
 
   recalculateVisibleTicks() {
     const start = Math.max(0, this.ticks.length - this.visibleShift - this.visibleLength);
-    this.visibleTicks = this.ticks.slice(start, start + 1200);
+    this.visibleTicks = this.ticks.slice(start, start + this.visibleLength);
     const visibleCloses = this.visibleTicks.map(t => t.c);
     this.maxTick = Math.max(...visibleCloses);
     this.minTick = Math.min(...visibleCloses);
